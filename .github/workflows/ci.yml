@@ -9,7 +9,7 @@ jobs:
   create_pull_request:
     runs-on: ubuntu-latest
     outputs:
-      pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+      pr_number: ${{ steps.get_pr_number.outputs.pr_number }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -23,18 +23,27 @@ jobs:
       id: create_pr
       uses: peter-evans/create-pull-request@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.TOKEN_GITHUB }}
         commit-message: "Add new feature"
         branch: ${{ github.ref }}
         base: main  # Remplacer par la branche principale de votre dépôt si différente
         title: "New feature from ${{ github.ref }}"
         body: "This PR adds a new feature."
 
-    - name: Set PR number
-      run: echo "PR_NUMBER=${{ steps.create_pr.outputs.pull-request-number }}" >> $GITHUB_ENV
+    - name: Set branch name
+      run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-    - name: Check PR number
-      run: echo "PR_NUMBER is ${{ env.PR_NUMBER }}"
+    - name: Get pull request number
+      id: get_pr_number
+      run: python get_pr_number.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
+        BRANCH_NAME: ${{ env.BRANCH_NAME }}
+
+    - name: Set PR number
+      run: echo "PR_NUMBER=${{ steps.get_pr_number.outputs.pr_number }}" >> $GITHUB_ENV
 
   run_code_review:
     runs-on: ubuntu-latest

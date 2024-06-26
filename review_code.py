@@ -60,7 +60,7 @@ if __name__ == "__main__":
     pr_number = os.getenv("PR_NUMBER")
     repo_owner = os.getenv("GITHUB_REPOSITORY_OWNER")
     repo_name = os.getenv("GITHUB_REPOSITORY_NAME")
-    github_token = os.getenv("GITHUB_TOKEN")
+    github_token = os.getenv("TOKEN_GITHUB")
 
     logging.info(f"PR_NUMBER: {pr_number}")
     logging.info(f"GITHUB_REPOSITORY_OWNER: {repo_owner}")
