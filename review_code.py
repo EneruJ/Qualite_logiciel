@@ -10,15 +10,20 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Configuration des logs
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Fonction pour exécuter une commande shell
+def run_command(command):
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error running command {command}: {e}")
+        return ""
+
 # Fonction pour récupérer les diffs des commits
 def get_commit_diffs():
-    try:
-        result = subprocess.run(['git', 'diff', 'origin/main'], capture_output=True, text=True, check=True)
-        diffs = result.stdout.strip().split('\n')
-        return diffs
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error running git diff: {e}")
-        return []
+    run_command(['git', 'fetch', 'origin', 'main'])
+    diffs = run_command(['git', 'diff', 'origin/main'])
+    return diffs.split('\n')
 
 # Fonction pour analyser les diffs avec GPT
 def analyze_diffs(diffs):
