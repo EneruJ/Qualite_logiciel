@@ -5,7 +5,8 @@ import subprocess
 from openai import OpenAI
 
 # Configuration de l'API OpenAI
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 # Configuration des logs
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -74,7 +75,7 @@ if __name__ == "__main__":
     logging.info(f"GITHUB_REPOSITORY_OWNER: {repo_owner}")
     logging.info(f"GITHUB_REPOSITORY_NAME: {repo_name}")
 
-    if not pr_number or not repo_owner or not repo_name or not github_token:
+    if not pr_number or not repo_owner or not repo_name or not github_token or not api_key:
         logging.error("Missing environment variables")
         exit(1)
 
