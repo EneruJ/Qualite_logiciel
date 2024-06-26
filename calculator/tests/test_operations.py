@@ -1,5 +1,5 @@
 import unittest
-from calculator.operations import add, subtract, multiply, divide, power
+from calculator.operations import add, subtract, multiply, divide, power, mod, sqrt
 
 class TestCalculatorOperations(unittest.TestCase):
 
@@ -29,6 +29,20 @@ class TestCalculatorOperations(unittest.TestCase):
         self.assertEqual(power(2, 3), 8)
         self.assertEqual(power(4, 0.5), 2)
         self.assertEqual(power(2, -1), 0.5)
+
+    def test_mod(self):
+        self.assertEqual(mod(10, 3), 1)
+        self.assertEqual(mod(10, 5), 0)
+        self.assertEqual(mod(-10, 3), 2)
+        with self.assertRaises(ValueError):
+            mod(1, 0)
+
+    def test_sqrt(self):
+        self.assertEqual(sqrt(4), 2)
+        self.assertEqual(sqrt(9), 3)
+        self.assertEqual(sqrt(0), 0)
+        with self.assertRaises(ValueError):
+            sqrt(-1)
 
 if __name__ == '__main__':
     unittest.main()
