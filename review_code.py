@@ -28,6 +28,7 @@ def analyze_diffs(diffs):
             "Identify potential bugs, syntax errors, and violations of naming conventions. "
             "Also, suggest improvements for code quality and readability."
         )
+        logging.info(f"Prompt sent to OpenAI: {prompt}")
         response = openai.Completion.create(
             model="gpt-3.5-turbo",
             prompt=prompt,
@@ -71,6 +72,8 @@ if __name__ == "__main__":
     diffs = get_commit_diffs(repo_path)
     if not diffs:
         logging.info("No diffs found")
+        default_comment = "No code changes detected. Please ensure that your changes are committed properly."
+        post_comments_to_pr([default_comment], pr_number, repo_owner, repo_name, github_token)
         exit(0)
 
     comments = analyze_diffs(diffs)
