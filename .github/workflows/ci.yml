@@ -34,8 +34,14 @@ jobs:
         title: "New feature from ${{ github.ref }}"
         body: "This PR adds a new feature."
 
-    - name: Save PR number to file
+     - name: Save PR number to file
       run: echo "${{ steps.create_pr.outputs.pull-request-number }}" > pr_number.txt
+
+    - name: Upload PR number artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: pr_number
+        path: pr_number.txt
 
   run_code_review:
     runs-on: ubuntu-latest
@@ -56,6 +62,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
+    - name: Download PR number artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: pr_number
 
     - name: Retrieve PR number from file
       run: PR_NUMBER=$(cat pr_number.txt) && echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
