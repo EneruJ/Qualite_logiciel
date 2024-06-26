@@ -4,7 +4,7 @@ from calculator.operations import add, subtract, multiply, divide, power, mod, s
 class TestCalculatorOperations(unittest.TestCase):
 
     def test_add(self):
-        self.assertEqual(add(1, 2), 3)
+        self.assertEqual(add(3, 2), 5)
         self.assertEqual(add(-1, 1), 0)
         self.assertEqual(add(-1, -1), -2)
 

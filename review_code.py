@@ -11,6 +11,9 @@ client = OpenAI(api_key=api_key)
 # Configuration des logs
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+MAX_DIFF_LENGTH = 3000  # Limite de longueur du diff envoyé à l'API
+MAX_REQUESTS = 5  # Nombre maximum de requêtes à l'API par exécution
+
 # Fonction pour exécuter une commande shell
 def run_command(command):
     try:
@@ -24,16 +27,32 @@ def run_command(command):
 def get_commit_diffs():
     run_command(['git', 'fetch', 'origin', 'main'])
     diffs = run_command(['git', 'diff', 'origin/main'])
-    return diffs.split('\n')
+    return diffs
+
+# Fonction pour regrouper les diffs par fichiers
+def group_diffs_by_files(diffs):
+    file_diffs = {}
+    current_file = None
+    for line in diffs.split('\n'):
+        if line.startswith('diff --git'):
+            current_file = line.split(' ')[2][2:]  # obtenir le nom du fichier
+            file_diffs[current_file] = []
+        if current_file:
+            file_diffs[current_file].append(line)
+    return file_diffs
 
 # Fonction pour analyser les diffs avec GPT
-def analyze_diffs(diffs):
+def analyze_diffs(file_diffs):
     comments = []
-    for diff in diffs:
-        if not diff.strip():
-            continue
+    request_count = 0
+    for file, diff_lines in file_diffs.items():
+        if request_count >= MAX_REQUESTS:
+            break
+        diff_content = '\n'.join(diff_lines)
+        if len(diff_content) > MAX_DIFF_LENGTH:
+            diff_content = diff_content[:MAX_DIFF_LENGTH] + '\n... [diff truncated] ...'
         prompt = (
-            f"Analyze the following diff and provide a detailed code review:\n{diff}\n\n"
+            f"Analyze the following diff from file {file} and provide a detailed code review:\n{diff_content}\n\n"
             "Identify potential bugs, syntax errors, and violations of naming conventions. "
             "Also, suggest improvements for code quality and readability."
         )
@@ -44,10 +63,12 @@ def analyze_diffs(diffs):
                 {"role": "user", "content": prompt}
             ],
             model="gpt-3.5-turbo",
+            max_tokens=300  # Limite du nombre de tokens dans la réponse
         )
         review_comment = response.choices[0].message.content.strip()
-        comments.append(review_comment)
-        logging.info(f"Review for diff: {diff}\n{review_comment}")
+        comments.append(f"### Review for {file}\n{review_comment}")
+        logging.info(f"Review for file {file}:\n{review_comment}")
+        request_count += 1
     return comments
 
 # Fonction pour poster les commentaires à la pull request
@@ -86,7 +107,8 @@ if __name__ == "__main__":
         post_comments_to_pr([default_comment], pr_number, repo_owner, repo_name, github_token)
         exit(0)
 
-    comments = analyze_diffs(diffs)
+    file_diffs = group_diffs_by_files(diffs)
+    comments = analyze_diffs(file_diffs)
     if comments:
         post_comments_to_pr(comments, pr_number, repo_owner, repo_name, github_token)
     else:
