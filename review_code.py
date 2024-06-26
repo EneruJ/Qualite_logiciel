@@ -45,7 +45,7 @@ def analyze_diffs(diffs):
             ],
             model="gpt-3.5-turbo",
         )
-        review_comment = response.choices[0].message['content'].strip()
+        review_comment = response.choices[0].message.content.strip()
         comments.append(review_comment)
         logging.info(f"Review for diff: {diff}\n{review_comment}")
     return comments
