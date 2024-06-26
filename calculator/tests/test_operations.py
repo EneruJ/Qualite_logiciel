@@ -1,5 +1,5 @@
 import unittest
-from calculator.operations import add, subtract, multiply, divide
+from calculator.operations import add, subtract, multiply, divide, power
 
 class TestCalculatorOperations(unittest.TestCase):
 
@@ -24,6 +24,11 @@ class TestCalculatorOperations(unittest.TestCase):
         self.assertEqual(divide(-1, -1), 1)
         with self.assertRaises(ValueError):
             divide(1, 0)
+
+    def test_power(self):
+        self.assertEqual(power(2, 3), 8)
+        self.assertEqual(power(4, 0.5), 2)
+        self.assertEqual(power(2, -1), 0.5)
 
 if __name__ == '__main__':
     unittest.main()
