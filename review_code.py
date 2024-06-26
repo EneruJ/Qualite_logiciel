@@ -37,12 +37,15 @@ def analyze_diffs(diffs):
             "Also, suggest improvements for code quality and readability."
         )
         logging.info(f"Prompt sent to OpenAI: {prompt}")
-        response = openai.Completion.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            prompt=prompt,
+            messages=[
+                {"role": "system", "content": "You are a code review assistant."},
+                {"role": "user", "content": prompt}
+            ],
             max_tokens=300
         )
-        review_comment = response.choices[0].text.strip()
+        review_comment = response.choices[0].message['content'].strip()
         comments.append(review_comment)
         logging.info(f"Review for diff: {diff}\n{review_comment}")
     return comments
