@@ -14,8 +14,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def get_commit_diffs(repo_path):
     repo = Repo(repo_path)
     diffs = []
-    for diff in repo.head.commit.diff(None):
-        diffs.append(diff.diff.decode('utf-8'))
+    logging.info(f"Current branch: {repo.active_branch.name}")
+    for commit in repo.iter_commits('HEAD'):
+        for diff in commit.diff('HEAD~1', create_patch=True):
+            diffs.append(diff.diff.decode('utf-8'))
     return diffs
 
 # Fonction pour analyser les diffs avec GPT
