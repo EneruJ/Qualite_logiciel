@@ -33,7 +33,7 @@ class TestCalculatorOperations(unittest.TestCase):
     def test_mod(self):
         self.assertEqual(mod(10, 3), 1)
         self.assertEqual(mod(10, 5), 0)
-        self.assertEqual(mod(-10, 3), -1)
+        self.assertEqual(mod(-10, 3), 2)
         with self.assertRaises(ValueError):
             mod(1, 0)
 

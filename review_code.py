@@ -2,7 +2,7 @@ import os
 import logging
 import openai
 import requests
-from git import Repo
+import subprocess
 
 # Configuration de l'API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -11,18 +11,21 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Fonction pour récupérer les diffs des commits
-def get_commit_diffs(repo_path):
-    repo = Repo(repo_path)
-    diffs = []
-    logging.info(f"Current branch: {repo.active_branch.name}")
-    for diff in repo.head.commit.diff(None, create_patch=True):  # Compare les modifications non validées
-        diffs.append(diff.diff.decode('utf-8'))
-    return diffs
+def get_commit_diffs():
+    try:
+        result = subprocess.run(['git', 'diff', 'origin/main'], capture_output=True, text=True, check=True)
+        diffs = result.stdout.strip().split('\n')
+        return diffs
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error running git diff: {e}")
+        return []
 
 # Fonction pour analyser les diffs avec GPT
 def analyze_diffs(diffs):
     comments = []
     for diff in diffs:
+        if not diff.strip():
+            continue
         prompt = (
             f"Analyze the following diff and provide a detailed code review:\n{diff}\n\n"
             "Identify potential bugs, syntax errors, and violations of naming conventions. "
@@ -55,7 +58,6 @@ def post_comments_to_pr(comments, pr_number, repo_owner, repo_name, github_token
             logging.error(f"Failed to post comment to PR #{pr_number}: {response.content}")
 
 if __name__ == "__main__":
-    repo_path = '.'
     pr_number = os.getenv("PR_NUMBER")
     repo_owner = os.getenv("GITHUB_REPOSITORY_OWNER")
     repo_name = os.getenv("GITHUB_REPOSITORY_NAME")
@@ -69,7 +71,7 @@ if __name__ == "__main__":
         logging.error("Missing environment variables")
         exit(1)
 
-    diffs = get_commit_diffs(repo_path)
+    diffs = get_commit_diffs()
     if not diffs:
         logging.info("No diffs found")
         default_comment = "No code changes detected. Please ensure that your changes are committed properly."
