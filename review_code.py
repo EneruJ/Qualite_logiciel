@@ -15,9 +15,8 @@ def get_commit_diffs(repo_path):
     repo = Repo(repo_path)
     diffs = []
     logging.info(f"Current branch: {repo.active_branch.name}")
-    for commit in repo.iter_commits('HEAD'):
-        for diff in commit.diff('HEAD~1', create_patch=True):
-            diffs.append(diff.diff.decode('utf-8'))
+    for diff in repo.head.commit.diff(None, create_patch=True):  # Compare les modifications non validées
+        diffs.append(diff.diff.decode('utf-8'))
     return diffs
 
 # Fonction pour analyser les diffs avec GPT
