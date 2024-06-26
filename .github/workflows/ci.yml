@@ -23,7 +23,7 @@ jobs:
       id: create_pr
       uses: peter-evans/create-pull-request@v4
       with:
-        token: ${{ secrets.TOKEN_GITHUB }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Add new feature"
         branch: ${{ github.ref }}
         base: main  # Remplacer par la branche principale de votre dépôt si différente
@@ -32,6 +32,9 @@ jobs:
 
     - name: Set PR number
       run: echo "PR_NUMBER=${{ steps.create_pr.outputs.pull-request-number }}" >> $GITHUB_ENV
+
+    - name: Log PR number
+      run: echo "Pull Request Number: ${{ env.PR_NUMBER }}"
 
   run_code_review:
     runs-on: ubuntu-latest
@@ -57,6 +60,10 @@ jobs:
       run: |
         echo "GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
         echo "GITHUB_REPOSITORY_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
+        echo "PR_NUMBER=${{ needs.create_pull_request.outputs.pr_number }}" >> $GITHUB_ENV
+
+    - name: Log Environment Variables
+      run: env
 
     - name: Run code review script
       env:

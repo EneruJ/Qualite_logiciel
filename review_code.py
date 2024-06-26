@@ -62,6 +62,10 @@ if __name__ == "__main__":
     repo_name = os.getenv("GITHUB_REPOSITORY_NAME")
     github_token = os.getenv("TOKEN_GITHUB")
 
+    logging.info(f"PR Number: {pr_number}")
+    logging.info(f"Repository Owner: {repo_owner}")
+    logging.info(f"Repository Name: {repo_name}")
+
     diffs = get_commit_diffs(repo_path)
     comments = analyze_diffs(diffs)
     post_comments_to_pr(comments, pr_number, repo_owner, repo_name, github_token)
