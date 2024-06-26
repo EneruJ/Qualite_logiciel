@@ -43,13 +43,10 @@ def post_comments_to_pr(comments, pr_number, repo_owner, repo_name, github_token
         'Authorization': f'token {github_token}',
         'Accept': 'application/vnd.github.v3+json'
     }
+    url = f'https://api.github.com/repos/{repo_owner}/{repo_name}/issues/{pr_number}/comments'
     for comment in comments:
         data = {'body': comment}
-        response = requests.post(
-            f'https://api.github.com/repos/{repo_owner}/{repo_name}/issues/{pr_number}/comments',
-            headers=headers,
-            json=data
-        )
+        response = requests.post(url, headers=headers, json=data)
         if response.status_code == 201:
             logging.info(f"Successfully posted comment to PR #{pr_number}")
         else:
@@ -66,6 +63,17 @@ if __name__ == "__main__":
     logging.info(f"GITHUB_REPOSITORY_OWNER: {repo_owner}")
     logging.info(f"GITHUB_REPOSITORY_NAME: {repo_name}")
 
+    if not pr_number or not repo_owner or not repo_name or not github_token:
+        logging.error("Missing environment variables")
+        exit(1)
+
     diffs = get_commit_diffs(repo_path)
+    if not diffs:
+        logging.info("No diffs found")
+        exit(0)
+
     comments = analyze_diffs(diffs)
-    post_comments_to_pr(comments, pr_number, repo_owner, repo_name, github_token)
+    if comments:
+        post_comments_to_pr(comments, pr_number, repo_owner, repo_name, github_token)
+    else:
+        logging.info("No comments to post")
