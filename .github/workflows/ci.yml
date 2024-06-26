@@ -3,11 +3,13 @@ name: Code Review and Pull Request
 on:
   push:
     branches:
-      - 'feature/*'
+      - 'feature/*'  # Déclenche le workflow pour les branches nommées 'feature/*'
 
 jobs:
   create_pull_request:
     runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -21,12 +23,18 @@ jobs:
       id: create_pr
       uses: peter-evans/create-pull-request@v4
       with:
-        token: ${{ secrets.TOKEN_GITHUB }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Add new feature"
         branch: ${{ github.ref }}
-        base: main 
+        base: main  # Remplacer par la branche principale de votre dépôt si différente
         title: "New feature from ${{ github.ref }}"
         body: "This PR adds a new feature."
+
+    - name: Set PR number
+      run: echo "PR_NUMBER=${{ steps.create_pr.outputs.pull-request-number }}" >> $GITHUB_ENV
+
+    - name: Log PR number
+      run: "echo Pull Request Number: ${{ env.PR_NUMBER }}"
 
   run_code_review:
     runs-on: ubuntu-latest
@@ -48,9 +56,22 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Set repository details
+      run: |
+        echo "GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
+        echo "GITHUB_REPOSITORY_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
+        echo "PR_NUMBER=${{ needs.create_pull_request.outputs.pr_number }}" >> $GITHUB_ENV
+
+    - name: Log Environment Variables
+      run: env
+
     - name: Run code review script
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        PR_NUMBER: ${{ env.PR_NUMBER }}
+        GITHUB_REPOSITORY_OWNER: ${{ env.GITHUB_REPOSITORY_OWNER }}
+        GITHUB_REPOSITORY_NAME: ${{ env.GITHUB_REPOSITORY_NAME }}
       run: python review_code.py
 
   run_tests:

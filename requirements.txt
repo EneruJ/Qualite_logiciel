@@ -1,3 +1,4 @@
 openai
 GitPython
 flask
+requests
