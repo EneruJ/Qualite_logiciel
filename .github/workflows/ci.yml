@@ -1,15 +1,19 @@
 name: Code Review and Pull Request
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   push:
     branches:
-      - 'feature/*'  # Déclenche le workflow pour les branches nommées 'feature/*'
+      - 'feature/*'
 
 jobs:
   create_pull_request:
     runs-on: ubuntu-latest
     outputs:
-      pr_number: ${{ steps.get_pr_number.outputs.pr_number }}
+      pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -17,7 +21,7 @@ jobs:
     - name: Set up Git
       run: |
         git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git config --global user.email 'mezzache.pro@gmail.com'
 
     - name: Create pull request
       id: create_pr
@@ -26,24 +30,12 @@ jobs:
         token: ${{ secrets.TOKEN_GITHUB }}
         commit-message: "Add new feature"
         branch: ${{ github.ref }}
-        base: main  # Remplacer par la branche principale de votre dépôt si différente
+        base: main 
         title: "New feature from ${{ github.ref }}"
         body: "This PR adds a new feature."
 
-    - name: Set branch name
-      run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-
-    - name: Get pull request number
-      id: get_pr_number
-      run: python get_pr_number.py
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-        GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-        GITHUB_REPOSITORY_NAME: ${{ github.event.repository.name }}
-        BRANCH_NAME: ${{ env.BRANCH_NAME }}
-
-    - name: Set PR number
-      run: echo "PR_NUMBER=${{ steps.get_pr_number.outputs.pr_number }}" >> $GITHUB_ENV
+    - name: Save PR number to file
+      run: echo "${{ steps.create_pr.outputs.pull-request-number }}" > pr_number.txt
 
   run_code_review:
     runs-on: ubuntu-latest
@@ -65,6 +57,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Retrieve PR number from file
+      run: PR_NUMBER=$(cat pr_number.txt) && echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+
     - name: Set repository details
       run: |
         echo "GITHUB_REPOSITORY_OWNER=${{ github.repository_owner }}" >> $GITHUB_ENV
@@ -73,7 +68,7 @@ jobs:
     - name: Run code review script
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         PR_NUMBER: ${{ env.PR_NUMBER }}
         GITHUB_REPOSITORY_OWNER: ${{ env.GITHUB_REPOSITORY_OWNER }}
         GITHUB_REPOSITORY_NAME: ${{ env.GITHUB_REPOSITORY_NAME }}
