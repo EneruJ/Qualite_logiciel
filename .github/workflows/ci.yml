@@ -7,7 +7,7 @@ permissions:
 on:
   push:
     branches:
-      - 'feature/*'
+      - 'feature/*'  # Déclenche le workflow pour les branches nommées 'feature/*'
 
 jobs:
   create_pull_request:
@@ -21,7 +21,7 @@ jobs:
     - name: Set up Git
       run: |
         git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'mezzache.pro@gmail.com'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
     - name: Create pull request
       id: create_pr
@@ -30,11 +30,11 @@ jobs:
         token: ${{ secrets.TOKEN_GITHUB }}
         commit-message: "Add new feature"
         branch: ${{ github.ref }}
-        base: main 
+        base: main  # Remplacer par la branche principale de votre dépôt si différente
         title: "New feature from ${{ github.ref }}"
         body: "This PR adds a new feature."
 
-     - name: Save PR number to file
+    - name: Save PR number to file
       run: echo "${{ steps.create_pr.outputs.pull-request-number }}" > pr_number.txt
 
     - name: Upload PR number artifact
