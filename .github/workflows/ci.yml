@@ -34,7 +34,7 @@ jobs:
       run: echo "PR_NUMBER=${{ steps.create_pr.outputs.pull-request-number }}" >> $GITHUB_ENV
 
     - name: Log PR number
-      run: echo "Pull Request Number: ${{ env.PR_NUMBER }}"
+      run: "echo Pull Request Number: ${{ env.PR_NUMBER }}"
 
   run_code_review:
     runs-on: ubuntu-latest
