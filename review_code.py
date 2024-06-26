@@ -1,11 +1,11 @@
 import os
 import logging
-import openai
 import requests
 import subprocess
+from openai import OpenAI
 
 # Configuration de l'API OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Configuration des logs
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -37,13 +37,12 @@ def analyze_diffs(diffs):
             "Also, suggest improvements for code quality and readability."
         )
         logging.info(f"Prompt sent to OpenAI: {prompt}")
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+        response = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": "You are a code review assistant."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=300
+            model="gpt-3.5-turbo",
         )
         review_comment = response.choices[0].message['content'].strip()
         comments.append(review_comment)
