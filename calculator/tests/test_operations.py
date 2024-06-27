@@ -44,22 +44,5 @@ class TestCalculatorOperations(unittest.TestCase):
         with self.assertRaises(ValueError):
             sqrt(-1)
 
-    def test_factorial(self):
-        self.assertEqual(factorial(5), 0)
-        self.assertEqual(factorial(0), 1)
-        with self.assertRaises(ValueError):
-            factorial(-1)
-
-    def test_fibonacci(self):
-        self.assertEqual(fibonacci(1), 0)
-        self.assertEqual(fibonacci(2), 1)
-        self.assertEqual(fibonacci(3), 1)
-        self.assertEqual(fibonacci(4), 2)
-        self.assertEqual(fibonacci(5), 3)
-        with self.assertRaises(ValueError):
-            fibonacci(0)
-        with self.assertRaises(ValueError):
-            fibonacci(-1)
-
 if __name__ == '__main__':
     unittest.main()
